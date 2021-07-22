@@ -1,0 +1,6 @@
+$variables
+
+$meta
+!title="Hello, World"
+$content
+(h1: Hello, World!)
