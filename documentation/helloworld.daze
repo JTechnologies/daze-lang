@@ -1,6 +1,6 @@
-$variables
-
-$meta
-!title="Hello, World"
-$content
-(h1: Hello, World!)
+$site
++%title = 'Hello, Daze!'
++%name = 'content'
++!lol = 'rofl'
+(h1: 'Hello, Engine 2!')
++style='color: black\;'

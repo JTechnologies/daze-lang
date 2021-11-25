@@ -22,7 +22,6 @@ def parseTag(line, skip=0):
                     if split[i][1] == "'" or split[i][1] == '"':
                         split[i] = split[i][2:-1]
                     elif split[i][1] == "(":
-                        print(split[i])
                         this = split[i][1:]
                         next = split[i+1]
                         fl = True
@@ -47,12 +46,10 @@ def parseTag(line, skip=0):
                         while addBack>0:
                             next=next+")"
                             addBack = addBack-1
-                        print(i)
                         split[i] = parseTag(f"{this}:{next}", skip=skipNext)
                 elif split[i][0] == "'" or '"':
                     split[i] = split[1][2:-1]
                 elif split[i][0] == "(":
-                        print(split[i])
                         this = split[i][1:]
                         next = split[i+1]
                         fl = True
@@ -77,7 +74,6 @@ def parseTag(line, skip=0):
                         while addBack>0:
                             next=next+")"
                             addBack = addBack-1
-                        print(i)
                         split[i] = parseTag(f"{this}:{next}", skip=skipNext)
     else:
         split[1] = split[1].replace("\)", "🵋")
@@ -87,12 +83,11 @@ def parseTag(line, skip=0):
             if split[1][1] == "'" or '"':
                 split[1] = split[1][2:-1]
             elif split[1][1] == "(":
-                print("ERR")
+                return("ERR 86")
         elif split[1][0] == "'" or '"':
             split[1] = split[1][2:-1]
         elif split[1][0] == "(":
             pass
-    #print([split[0], split[1]])
     return [split[0],split[1]]
 def parseSite(input):
     lines = []
@@ -139,7 +134,6 @@ def parseSite(input):
             metavariables[variable[0]]=variable[1]
         elif line[0] == "(":
             tags.append(parseTag(line))
-            #print(parseTag(line))
         elif line[0] == "$":
             pass
         elif line[0] == "+":
@@ -151,14 +145,12 @@ def parseSite(input):
             elif working[1][0] == "'" or working[1][0] == '"':
                 working[1]=working[1][1:-1] 
             tag = tags[-1]
-            #print(tag)
             if len(tag) == 2:
                 tag.append([working])
             elif len(tag) == 3:
                 tag[2].append(working)
             else:
                 return("!!Error: Internal Error. Submit an issue with code 'r01:ev2:086'")
-            #print(tag)
         else:
             return(f"!!Error on line (tba): Unknown line start. {line}")
     return comments, variables, metavariables, tags
@@ -184,7 +176,6 @@ def toHtml(input, part="all"):
     comments = []
     variables = {}
     metavariables = {}
-    print(metavariables)
     if input[0] == "$site":
         comments, variables, metavariables, tags = parseSite(input)
     elif input[0] == "$script":
@@ -195,28 +186,35 @@ def toHtml(input, part="all"):
     head=""
     for i in tags:
         parsedTags=f"{parsedTags}{ptag2html(i)}\n"    
-    for i in metavariables.keys:
+    for i in metavariables.keys():
         o=""
         if not i in ['title']:
             # Create a standard meta tag && append it to the proccessed tags.
-            o=f'<meta'
+            o=f'<meta name="{i}" content="{metavariables[i][1]}">'
+        else:
+            o=f'<{i}>{metavariables[i][1]}</{i}>'
         head=f"{head}{o}\n"
     if part=="all":
         return f"""<!DOCTYPE html>
-        <html>
-        <head>
-        {head}
-        </head>
-        <body>
-        {parsedTags}
-        </body>
-        </head>
-        """
+<html>
+<head>
+
+{head}
+</head>
+<body>
+
+{parsedTags}
+</body>
+</html>"""
     elif part=="head":
-        pass
+        return f"""<head>
+
+{head}
+</head>"""  
     elif part=="body":
-        pass
+        return f"""<body>
+
+{parsedTags}
+</body>"""
     else:
         return f"!!Error: invalid part for toHtml '{part}'"
-# Testing Area
-print(toHtml("$site; +%title = 'Hello, Daze!'; +%name = 'content'; +!lol = 'rofl'; (h1: 'Hello, engine_2'); +lol='lol'"))
