@@ -162,7 +162,20 @@ def parseSite(input):
         else:
             return(f"!!Error on line (tba): Unknown line start. {line}")
     return comments, variables, metavariables, tags
-def toHtml(input, part="head"):
+def ptag2html(input):
+    ptag=input
+    tag="<"
+    tag=tag+ptag[0]
+    for attr in ptag[2]:
+        tag = f"{tag} {attr[0]}='{attr[1]}'"
+    tag = f"{tag}>"
+    if type(ptag[1])!= str:
+        tag=f"{tag}{ptag2html(ptag[1])}"
+    else:
+        tag=f"{tag}{ptag[1]}"
+    tag=f"{tag}</{ptag[0]}>"
+    return tag
+def toHtml(input, part="all"):
     textInput = input
     input = input.replace("; ", "\n").replace(";", "\n")
     input = input.replace("\\\n", ";")
@@ -171,15 +184,39 @@ def toHtml(input, part="head"):
     comments = []
     variables = {}
     metavariables = {}
-    print(input, "\n")
+    print(metavariables)
     if input[0] == "$site":
         comments, variables, metavariables, tags = parseSite(input)
     elif input[0] == "$script":
         return "!!Error: Attempt to compile pure script into HTML"
     else:
         return f"!!Error on line 1: Unknown Daze type '{input[0]}'"
-    output = input 
-    return metavariables, variables, tags, comments
-
+    parsedTags=""
+    head=""
+    for i in tags:
+        parsedTags=f"{parsedTags}{ptag2html(i)}\n"    
+    for i in metavariables.keys:
+        o=""
+        if not i in ['title']:
+            # Create a standard meta tag && append it to the proccessed tags.
+            o=f'<meta'
+        head=f"{head}{o}\n"
+    if part=="all":
+        return f"""<!DOCTYPE html>
+        <html>
+        <head>
+        {head}
+        </head>
+        <body>
+        {parsedTags}
+        </body>
+        </head>
+        """
+    elif part=="head":
+        pass
+    elif part=="body":
+        pass
+    else:
+        return f"!!Error: invalid part for toHtml '{part}'"
 # Testing Area
-print(toHtml("$site; +!lol = 'rofl'; (div: (div: (div: (p: 'hey')))); +lol='lol'"))
+print(toHtml("$site; +%title = 'Hello, Daze!'; +%name = 'content'; +!lol = 'rofl'; (h1: 'Hello, engine_2'); +lol='lol'"))
